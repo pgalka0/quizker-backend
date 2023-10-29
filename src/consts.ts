@@ -1,0 +1,5 @@
+export const consts = {
+  QUESTION_MODEL: 'QUESTION_MODEL',
+  QUIZ_MODEL: 'QUIZ_MODEL',
+  USER_MODEL: 'USER_MODEL',
+};
