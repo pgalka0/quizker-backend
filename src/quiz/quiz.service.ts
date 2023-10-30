@@ -14,12 +14,15 @@ import { getRandomInt } from 'src/utils';
 import { Template, generate } from '@pdfme/generator';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ClassService } from 'src/class/class.service';
+const merge = require('easy-pdf-merge');
 
 @Injectable()
 export class QuizService {
   constructor(
     @Inject(consts.QUIZ_MODEL)
     private quizModel: Model<IQuiz>,
+    private readonly classService: ClassService,
   ) {}
 
   async create(data: IQuiz) {
@@ -49,6 +52,7 @@ export class QuizService {
     const quizQuestions = quiz.questions;
 
     const pdfs = [];
+    const timestamp = Date.now();
 
     for (const student of data.students) {
       const randomNumber = getRandomInt(
@@ -65,14 +69,16 @@ export class QuizService {
       };
       quizzes.push(quizInstance);
 
-      const pdf = fs.createReadStream(await this.generatePDF(student));
-      pdfs.push(new StreamableFile(pdf));
+      const pdf = await this.generatePDF(student, timestamp.toString());
+      pdfs.push(pdf);
     }
 
-    return { quizzes, pdfs: pdfs as StreamableFile[] };
+    // await this.mergePdfs(pdfs, timestamp.toString());
+
+    return { quizzes };
   }
 
-  async generatePDF(username: string) {
+  async generatePDF(username: string, timestamp: string) {
     const template = {
       ...PDF_TEMPLATE,
     };
@@ -84,9 +90,41 @@ export class QuizService {
 
     const pdf = await generate({ template: template as any, inputs });
 
-    const filePath = `../../pdfs/${username}.pdf`;
+    const filePath = `../../pdfs/${username}-${timestamp}.pdf`;
     fs.writeFileSync(path.join(__dirname, filePath), pdf);
 
     return path.join(__dirname, filePath);
+  }
+
+  // async mergePdfs(pdfs: string[], timestamp: string) {
+  //   merge(
+  //     pdfs,
+  //     path.join(__dirname, `../../pdfs/result-${timestamp}.pdf`),
+  //     function (err) {
+  //       if (err) {
+  //         return console.log(err);
+  //       }
+  //       console.log('Success');
+  //     },
+  //   );
+  // }
+
+  async generateForClass(data: {
+    className: string;
+    questionsAmount: number;
+    id: string;
+  }) {
+    const students = (await this.classService.getByName(data.className))
+      .students;
+
+    if (students.length > 0) {
+      return await this.generate({
+        students,
+        questionsAmount: data.questionsAmount,
+        id: data.id,
+      });
+    } else {
+      throw new HttpException('No students available', HttpStatus.BAD_REQUEST);
+    }
   }
 }
