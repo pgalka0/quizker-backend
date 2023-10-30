@@ -11,11 +11,11 @@ import { Model } from 'mongoose';
 import { consts } from 'src/consts';
 import { IQuiz, IQuizInstance } from './model/quiz.model';
 import { getRandomInt } from 'src/utils';
-import { Template, generate } from '@pdfme/generator';
+import { generate } from '@pdfme/generator';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ClassService } from 'src/class/class.service';
-const merge = require('easy-pdf-merge');
+const PDFMerger = require('pdf-merger-js');
 
 @Injectable()
 export class QuizService {
@@ -73,7 +73,7 @@ export class QuizService {
       pdfs.push(pdf);
     }
 
-    // await this.mergePdfs(pdfs, timestamp.toString());
+    await this.mergePdfs(pdfs, timestamp.toString());
 
     return { quizzes };
   }
@@ -96,18 +96,17 @@ export class QuizService {
     return path.join(__dirname, filePath);
   }
 
-  // async mergePdfs(pdfs: string[], timestamp: string) {
-  //   merge(
-  //     pdfs,
-  //     path.join(__dirname, `../../pdfs/result-${timestamp}.pdf`),
-  //     function (err) {
-  //       if (err) {
-  //         return console.log(err);
-  //       }
-  //       console.log('Success');
-  //     },
-  //   );
-  // }
+  async mergePdfs(pdfs: string[], timestamp: string) {
+    var merger = new PDFMerger();
+
+    for (const pdf of pdfs) {
+      await merger.add(pdf);
+    }
+    const filePath = `../../pdfs/result-${timestamp}.pdf`;
+    await merger.save(path.join(__dirname, filePath));
+
+    console.log('merged succesfully');
+  }
 
   async generateForClass(data: {
     className: string;
