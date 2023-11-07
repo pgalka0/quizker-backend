@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsSemVer, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEmpty,
+  IsNotEmpty,
+  IsSemVer,
+  IsString,
+} from 'class-validator';
 
 export interface IUser {
   name: string;
@@ -10,7 +16,6 @@ export class CreateUserDto implements IUser {
   @IsNotEmpty()
   name: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsEmpty()
   class: string;
 }

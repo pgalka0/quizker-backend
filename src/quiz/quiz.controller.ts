@@ -1,7 +1,17 @@
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateQuizDto } from './model/quiz.model';
 import { QuizService } from './quiz.service';
-import { Body, Controller, Get, Header, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseFilePipe,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileValidationPipe } from './quiz.pipe';
 
 @ApiTags('Quiz')
 @Controller('quiz')
@@ -25,7 +35,7 @@ export class QuizController {
   async generate(
     @Body() data: { students: string[]; questionsAmount: number; id: string },
   ) {
-    const { quizzes } = await this.quizService.generate(data);
+    const { quizzes, pdf } = await this.quizService.generate(data);
     return quizzes;
   }
 
@@ -35,5 +45,16 @@ export class QuizController {
     @Body() data: { className: string; questionsAmount: number; id: string },
   ) {
     return await this.quizService.generateForClass(data);
+  }
+
+  @Post('/submit')
+  @UseInterceptors(FilesInterceptor('files'))
+  @ApiOperation({ summary: 'Submit Quiz' })
+  async submitQuiz(
+    @UploadedFiles()
+    files: Array<Express.Multer.File>,
+    @Body() data: { quizId: string },
+  ) {
+    return await this.quizService.submit(files, data);
   }
 }

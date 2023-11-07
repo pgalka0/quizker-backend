@@ -1,8 +1,18 @@
-import { IsAlpha, IsArray, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsAlpha,
+  IsArray,
+  IsEmpty,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export interface IQuiz {
   name: string;
   questions: string[];
+  instances: {
+    id: string;
+    questions: string[];
+  }[];
 }
 
 export interface IQuizInstance {
@@ -19,4 +29,6 @@ export class CreateQuizDto implements IQuiz {
   @IsArray()
   @IsNotEmpty()
   questions: string[];
+
+  instances: { id: string; questions: string[] }[];
 }

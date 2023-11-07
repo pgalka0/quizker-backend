@@ -23,7 +23,7 @@ export class QuestionController {
   @Post('/get')
   @ApiOperation({ summary: "Get question by ID's" })
   async getById(@Body() data: { ids: string[] }) {
-    return await this.questionService.getByText(data.ids);
+    return await this.questionService.getById(data.ids);
   }
 
   @Post('/delete')

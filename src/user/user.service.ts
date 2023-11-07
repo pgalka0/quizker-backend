@@ -19,6 +19,10 @@ export class UserService {
   }
 
   async getAll() {
-    return this.userModel.find({});
+    return await this.userModel.find({});
+  }
+
+  async getById(id: string) {
+    return await this.userModel.findOne({ id });
   }
 }

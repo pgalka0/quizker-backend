@@ -19,6 +19,12 @@ export class Quiz {
 
   @Prop()
   questions: string[];
+
+  @Prop()
+  instances: {
+    id: string;
+    questions: string[];
+  }[];
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

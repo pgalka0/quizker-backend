@@ -31,7 +31,7 @@ export class QuestionService {
     return await this.questionModel.find({});
   }
 
-  async getByText(data?: string[]) {
+  async getById(data?: string[]) {
     return await this.questionModel.find(
       data?.length
         ? {

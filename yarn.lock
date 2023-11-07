@@ -771,6 +771,13 @@
     "jsonc-parser" "3.2.0"
     "pluralize" "8.0.0"
 
+"@nestjs/serve-static@^4.0.0":
+  "integrity" "sha512-8cTrNV2ngdHIjiLNsXePnw0+KY1ThrZGz/WeyAG5gIvmZNDbnZBOrPoYlKL+MOzlXlQStxR5jKLYmn+nJeoncQ=="
+  "resolved" "https://registry.npmjs.org/@nestjs/serve-static/-/serve-static-4.0.0.tgz"
+  "version" "4.0.0"
+  dependencies:
+    "path-to-regexp" "0.2.5"
+
 "@nestjs/swagger@^7.1.14":
   "integrity" "sha512-2Ol4S6qHeYVVmkshkWBM8E/qkmEqEOUj2QIewr0jLSyo30H7f3v81pJyks6pTLy4PK0LGUXojMvIfFIE3mmGQQ=="
   "resolved" "https://registry.npmjs.org/@nestjs/swagger/-/swagger-7.1.14.tgz"
@@ -1546,6 +1553,15 @@
   "integrity" "sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg=="
   "resolved" "https://registry.npmjs.org/atob/-/atob-2.1.2.tgz"
   "version" "2.1.2"
+
+"axios@^1.6.0":
+  "integrity" "sha512-EZ1DYihju9pwVB+jg67ogm+Tmqc6JmhamRN6I4Zt8DfZu5lbcQGw3ozH9lFejSJgs/ibaef3A9PMXPLeefFGJg=="
+  "resolved" "https://registry.npmjs.org/axios/-/axios-1.6.0.tgz"
+  "version" "1.6.0"
+  dependencies:
+    "follow-redirects" "^1.15.0"
+    "form-data" "^4.0.0"
+    "proxy-from-env" "^1.1.0"
 
 "babel-jest@^29.0.0", "babel-jest@^29.7.0":
   "integrity" "sha512-BrvGY3xZSwEcCzKvKsCi2GgHqDqsYkOP4/by5xCgIwGXQxIEh+8ew3gmrE1y7XRR6LHZIj6yLYnUi/mm2KXKBg=="
@@ -2496,7 +2512,7 @@
     "jest-message-util" "^29.7.0"
     "jest-util" "^29.7.0"
 
-"express@4.18.2":
+"express@^4.18.1", "express@4.18.2":
   "integrity" "sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ=="
   "resolved" "https://registry.npmjs.org/express/-/express-4.18.2.tgz"
   "version" "4.18.2"
@@ -2655,6 +2671,11 @@
   "integrity" "sha512-36yxDn5H7OFZQla0/jFJmbIKTdZAQHngCedGxiMmpNfEZM0sdEeT+WczLQrjK6D7o2aiyLYDnkw0R3JK0Qv1RQ=="
   "resolved" "https://registry.npmjs.org/flatted/-/flatted-3.2.9.tgz"
   "version" "3.2.9"
+
+"follow-redirects@^1.15.0":
+  "integrity" "sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q=="
+  "resolved" "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.3.tgz"
+  "version" "1.15.3"
 
 "fontkit@^2.0.2":
   "integrity" "sha512-jc4k5Yr8iov8QfS6u8w2CnHWVmbOGtdBtOXMze5Y+QD966Rx6PEVWXSEGwXlsDlKtu1G12cJjcsybnqhSk/+LA=="
@@ -4248,6 +4269,11 @@
   "resolved" "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-0.1.7.tgz"
   "version" "0.1.7"
 
+"path-to-regexp@0.2.5":
+  "integrity" "sha512-l6qtdDPIkmAmzEO6egquYDfqQGPMRNGjYtrU13HAXb3YSRrt7HSb1sJY0pKp6o2bAa86tSB6iwaW2JbthPKr7Q=="
+  "resolved" "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-0.2.5.tgz"
+  "version" "0.2.5"
+
 "path-to-regexp@3.2.0":
   "integrity" "sha512-jczvQbCUS7XmS7o+y1aEO9OBVFeZBQ1MDSEqmO7xSoPgOPoowY/SxLpZ6Vh97/8qHZOteiCKb7gkG9gA2ZUxJA=="
   "resolved" "https://registry.npmjs.org/path-to-regexp/-/path-to-regexp-3.2.0.tgz"
@@ -4348,6 +4374,11 @@
   dependencies:
     "forwarded" "0.2.0"
     "ipaddr.js" "1.9.1"
+
+"proxy-from-env@^1.1.0":
+  "integrity" "sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg=="
+  "resolved" "https://registry.npmjs.org/proxy-from-env/-/proxy-from-env-1.1.0.tgz"
+  "version" "1.1.0"
 
 "pump@^3.0.0":
   "integrity" "sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww=="

@@ -1,3 +1,4 @@
+import { UserService } from './../user/user.service';
 import { PDF_TEMPLATE } from './../pdfTemplate';
 import { QuizModule } from './quiz.module';
 import {
@@ -16,6 +17,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ClassService } from 'src/class/class.service';
 const PDFMerger = require('pdf-merger-js');
+const FormData = require('form-data');
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { QuestionService } from 'src/question/question.service';
 
 @Injectable()
 export class QuizService {
@@ -23,6 +28,8 @@ export class QuizService {
     @Inject(consts.QUIZ_MODEL)
     private quizModel: Model<IQuiz>,
     private readonly classService: ClassService,
+    private readonly questionService: QuestionService,
+    private readonly userService: UserService,
   ) {}
 
   async create(data: IQuiz) {
@@ -34,7 +41,7 @@ export class QuizService {
   }
 
   async getAll() {
-    return this.quizModel.find({});
+    return { quizzes: await this.quizModel.find({}) };
   }
 
   async generate(data: {
@@ -54,7 +61,9 @@ export class QuizService {
     const pdfs = [];
     const timestamp = Date.now();
 
-    for (const student of data.students) {
+    const instances = [];
+
+    for (const studentId of data.students) {
       const randomNumber = getRandomInt(
         quizQuestions.length - data.questionsAmount,
       );
@@ -65,32 +74,55 @@ export class QuizService {
       const quizInstance: IQuizInstance = {
         name: quiz.name,
         questions: studentQuestions,
-        student: student,
+        student: studentId,
       };
       quizzes.push(quizInstance);
 
-      const pdf = await this.generatePDF(student, timestamp.toString());
+      const student = await this.userService.getById(studentId);
+      if (!student) {
+        throw new HttpException('Student not found', HttpStatus.BAD_REQUEST);
+      }
+
+      const quizInstanceId = uuidv4();
+      const pdfData = {
+        student: studentId,
+        id: quizInstanceId,
+        name: student.name,
+      };
+
+      const pdf = await this.generatePDF(pdfData, timestamp.toString());
       pdfs.push(pdf);
+
+      instances.push({ id: quizInstanceId, questions: studentQuestions });
     }
 
-    await this.mergePdfs(pdfs, timestamp.toString());
+    const resPdf = await this.mergePdfs(pdfs, timestamp.toString());
 
-    return { quizzes };
+    await this.quizModel.updateOne(
+      { id: data.id },
+      { $push: { instances: { $each: instances } } },
+    );
+
+    return { quizzes, pdf: 'http://localhost:3069/' + resPdf };
   }
 
-  async generatePDF(username: string, timestamp: string) {
+  async generatePDF(
+    data: { id: string; student: string; name: string },
+    timestamp: string,
+  ) {
     const template = {
       ...PDF_TEMPLATE,
     };
     const inputs = [
       {
-        owner: username,
+        data: JSON.stringify(data),
+        username: data.name,
       },
     ];
 
     const pdf = await generate({ template: template as any, inputs });
 
-    const filePath = `../../pdfs/${username}-${timestamp}.pdf`;
+    const filePath = `../../pdfs/${data.name}-${timestamp}.pdf`;
     fs.writeFileSync(path.join(__dirname, filePath), pdf);
 
     return path.join(__dirname, filePath);
@@ -105,7 +137,7 @@ export class QuizService {
     const filePath = `../../pdfs/result-${timestamp}.pdf`;
     await merger.save(path.join(__dirname, filePath));
 
-    console.log('merged succesfully');
+    return `result-${timestamp}.pdf`;
   }
 
   async generateForClass(data: {
@@ -125,5 +157,99 @@ export class QuizService {
     } else {
       throw new HttpException('No students available', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async submit(files: Express.Multer.File[], data: { quizId: string }) {
+    const quiz = await this.quizModel.findOne({ id: data.quizId });
+    if (!quiz) {
+      console.log('Quiz not found');
+      throw new HttpException('Quiz not found', HttpStatus.BAD_REQUEST);
+    }
+
+    const form = new FormData();
+    for (const file of files) {
+      form.append('files', file.buffer, file.originalname);
+    }
+    const response = await axios.post(
+      `http://127.0.0.1:5069/upload_test`,
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+        },
+      },
+    );
+
+    const returnObj = {
+      results: [],
+    };
+
+    const { results } = response.data;
+    for (const resp of results) {
+      // {
+      //   result: { q4: 'E', q1: 'B', q2: 'A', q3: 'A', q5: 'B' },
+      //   data: {
+      //     student: '4d8c586a-ff60-4e7c-976e-0c1b8e2b93ee',
+      //     id: 'b11e462e-b490-41ac-94af-c74be848430b',
+      //     name: 'Kamil'
+      //   }
+      // }
+      const quizData = resp.data;
+      const { id, name, student } = quizData;
+
+      const instance = quiz.instances.filter(
+        (instance) => instance.id === id,
+      )[0];
+
+      const answers = Object.keys(resp.result)
+        .sort()
+        .map((k) => resp.result[k]);
+
+      const questions = await this.questionService.getById(instance.questions);
+      const totalPoints = questions.length;
+      let userPoints = 0;
+      let idx = 0;
+      questions.forEach((question) => {
+        const correctAnswer = this.getCorrectAnswer(question);
+        if (correctAnswer === answers[idx]) {
+          userPoints++;
+        }
+        idx++;
+      });
+
+      const res = {
+        result: resp.result,
+        name: name,
+        score: ((userPoints / totalPoints) * 100).toString() + '%',
+      };
+
+      returnObj.results.push(res);
+    }
+
+    return returnObj;
+  }
+
+  private getCorrectAnswer(question: any) {
+    const correctAnswer = question.answers.indexOf(question.correctAnswer);
+    let correctAnswerLetter = '0';
+    switch (correctAnswer) {
+      case 0:
+        correctAnswerLetter = 'A';
+        break;
+      case 1:
+        correctAnswerLetter = 'B';
+        break;
+      case 2:
+        correctAnswerLetter = 'C';
+        break;
+      case 3:
+        correctAnswerLetter = 'D';
+        break;
+      case 4:
+        correctAnswerLetter = 'E';
+        break;
+    }
+
+    return correctAnswerLetter;
   }
 }
